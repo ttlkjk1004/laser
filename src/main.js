@@ -112,12 +112,12 @@ class LaserSimulator {
 
     createLasers() {
         const config = [
-            { id: 'left-fixed', pos: [-330, 80, 0], rot: [0, Math.PI/2, 0], axis: 'z', color: this.colors.y, isVertical: true },
-            { id: 'left-moving', pos: [-330, 0, 0], rot: [0, Math.PI/2, 0], axis: 'y', color: this.colors.z },
-            { id: 'right-fixed', pos: [330, 80, 0], rot: [0, -Math.PI/2, 0], axis: 'z', color: this.colors.y, isVertical: true },
-            { id: 'right-moving', pos: [330, 0, 0], rot: [0, -Math.PI/2, 0], axis: 'y', color: this.colors.z },
-            { id: 'top-fixed', pos: [-50, 260, 0], rot: [Math.PI/2, 0, 0], axis: 'z', color: this.colors.y },
-            { id: 'top-moving', pos: [50, 260, 0], rot: [Math.PI/2, 0, 0], axis: 'x', color: this.colors.x, isVertical: true },
+            { id: 'y1', pos: [-330, 80, 0], rot: [0, Math.PI/2, 0], axis: 'z', color: this.colors.y, isVertical: true },
+            { id: 'z1', pos: [-330, 0, 0], rot: [0, Math.PI/2, 0], axis: 'y', color: this.colors.z },
+            { id: 'y2', pos: [330, 80, 0], rot: [0, -Math.PI/2, 0], axis: 'z', color: this.colors.y, isVertical: true },
+            { id: 'z2', pos: [330, 0, 0], rot: [0, -Math.PI/2, 0], axis: 'y', color: this.colors.z },
+            { id: 'y', pos: [-50, 260, 0], rot: [Math.PI/2, 0, 0], axis: 'z', color: this.colors.y },
+            { id: 'x', pos: [50, 260, 0], rot: [Math.PI/2, 0, 0], axis: 'x', color: this.colors.x, isVertical: true },
         ];
 
         config.forEach(c => {
@@ -182,7 +182,7 @@ class LaserSimulator {
             });
         });
 
-        const laserIds = ['left-fixed', 'left-moving', 'right-fixed', 'right-moving', 'top-fixed', 'top-moving'];
+        const laserIds = ['y1', 'z1', 'y2', 'z2', 'y', 'x'];
         
         laserIds.forEach(id => {
             const prefix = id;
@@ -196,16 +196,16 @@ class LaserSimulator {
                 moveIn.addEventListener('input', (e) => {
                     const val = parseFloat(e.target.value);
                     const laser = this.lasers[id];
-                    if (id.includes('left') || id.includes('right')) {
-                        if (id.includes('moving')) {
+                    if (['y1', 'y2', 'z1', 'z2'].includes(id)) {
+                        if (id.startsWith('z')) {
                             laser.group.position.y = val;
                             updateVal('pos', val);
                         } else {
                             laser.group.position.z = val;
                             updateVal('move', val);
                         }
-                    } else if (id.includes('top')) {
-                        if (id.includes('moving')) {
+                    } else if (['y', 'x'].includes(id)) {
+                        if (id === 'x') {
                             laser.group.position.x = val;
                             updateVal('pos', val);
                         } else {
@@ -219,14 +219,14 @@ class LaserSimulator {
             document.getElementById(`${prefix}-tilt`)?.addEventListener('input', (e) => {
                 const val = parseFloat(e.target.value);
                 const rad = val * (Math.PI / 180);
-                this.lasers[id].group.rotation.x = (id.includes('top') ? Math.PI/2 : 0) + rad;
+                this.lasers[id].group.rotation.x = (['y', 'x'].includes(id) ? Math.PI/2 : 0) + rad;
                 updateVal('tilt', val);
             });
 
             document.getElementById(`${prefix}-rotation`)?.addEventListener('input', (e) => {
                 const val = parseFloat(e.target.value);
                 const rad = val * (Math.PI / 180);
-                this.lasers[id].group.rotation.y = (id.includes('top') ? 0 : Math.PI/2) + rad;
+                this.lasers[id].group.rotation.y = (['y', 'x'].includes(id) ? 0 : Math.PI/2) + rad;
                 updateVal('rotation', val);
             });
 
@@ -251,18 +251,13 @@ class LaserSimulator {
             this.camera.position.set(450, 350, 450);
             
             // Reset all lasers to aligned state (0) and default angles
-            const laserIds = ['left-fixed', 'left-moving', 'right-fixed', 'right-moving', 'top-fixed', 'top-moving'];
+            const laserIds = ['y1', 'z1', 'y2', 'z2', 'y', 'x'];
             laserIds.forEach(id => {
                 const laser = this.lasers[id];
                 const config = laser.config;
                 
-                // Reset position based on axis
-                if (id.includes('fixed')) {
-                    laser.group.position.z = 0;
-                } else {
-                    if (id.includes('top')) laser.group.position.x = 50; // default x
-                    else laser.group.position.y = 0; // default y
-                }
+                // Reset position based on config
+                laser.group.position.set(...config.pos);
 
                 // Reset rotation/tilt
                 laser.group.rotation.set(...config.rot);
@@ -274,19 +269,16 @@ class LaserSimulator {
                 }
 
                 // Update UI Sliders and Displays
-                const prefix = id;
                 ['move', 'pos', 'tilt', 'rotation', 'focus'].forEach(suffix => {
-                    const slider = document.getElementById(`${prefix}-${suffix}`);
+                    const slider = document.getElementById(`${id}-${suffix}`);
                     if (slider) {
                         if (suffix === 'focus') slider.value = 80;
-                        else if (suffix === 'pos' && id === 'top-moving') slider.value = 50;
-                        else slider.value = 0;
+                        else slider.value = config.id === 'x' && suffix === 'pos' ? 50 : 0;
                     }
-                    const display = document.getElementById(`${prefix}-${suffix}-val`);
+                    const display = document.getElementById(`${id}-${suffix}-val`);
                     if (display) {
                         if (suffix === 'focus') display.textContent = '80%';
-                        else if (suffix === 'pos' && id === 'top-moving') display.textContent = '50.0';
-                        else display.textContent = '0.0';
+                        else display.textContent = (config.id === 'x' && suffix === 'pos' ? 50 : 0).toFixed(1);
                     }
                 });
             });
@@ -367,11 +359,11 @@ class LaserSimulator {
         this.updatePhantomLines();
 
         // Status bar
-        document.getElementById('cur-x').textContent = this.lasers['top-moving'].group.position.x.toFixed(1);
-        document.getElementById('cur-y-l').textContent = this.lasers['left-moving'].group.position.y.toFixed(1);
-        document.getElementById('cur-y-r').textContent = this.lasers['right-moving'].group.position.y.toFixed(1);
-        document.getElementById('cur-z-l').textContent = this.lasers['left-fixed'].group.position.z.toFixed(1);
-        document.getElementById('cur-z-r').textContent = this.lasers['right-fixed'].group.position.z.toFixed(1);
+        document.getElementById('cur-x').textContent = this.lasers['x'].group.position.x.toFixed(1);
+        document.getElementById('cur-y1').textContent = this.lasers['z1'].group.position.y.toFixed(1);
+        document.getElementById('cur-y2').textContent = this.lasers['z2'].group.position.y.toFixed(1);
+        document.getElementById('cur-z1').textContent = this.lasers['y1'].group.position.z.toFixed(1);
+        document.getElementById('cur-z2').textContent = this.lasers['y2'].group.position.z.toFixed(1);
 
         this.renderer.render(this.scene, this.camera);
     }
