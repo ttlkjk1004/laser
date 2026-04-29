@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LAP Laser Alignment Simulator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+  </head>
+  <body>
+    <div id="app">
+      <div id="canvas-container"></div>
+      
+      <div id="ui-overlay">
+        <header>
+          <div class="logo-area">
+            <div class="logo-icon"></div>
+            <div>
+              <h1>LAP LASER</h1>
+              <p>Virtual Alignment Simulation</p>
+            </div>
+          </div>
+        </header>
+
+        <div class="control-panel">
+          <div class="tabs">
+            <button class="tab-btn active" data-target="left">
+              <i data-lucide="align-left"></i> Left
+            </button>
+            <button class="tab-btn" data-target="right">
+              <i data-lucide="align-right"></i> Right
+            </button>
+            <button class="tab-btn" data-target="top">
+              <i data-lucide="align-center"></i> Ceiling
+            </button>
+          </div>
+
+          <div class="tab-content active" id="left-controls">
+            <section>
+              <div class="section-header">
+                <div class="title-with-toggle">
+                  <h3>Fixed Laser (Z1)</h3>
+                  <label class="switch">
+                    <input type="checkbox" checked id="left-fixed-toggle">
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+                <span class="badge">Longitudinal</span>
+              </div>
+              <div class="control-grid">
+                <div class="control-group">
+                  <div class="label-row">
+                    <label>Longitudinal (Z)</label>
+                    <span class="val-display" id="left-fixed-move-val">0</span>
+                  </div>
+                  <input type="range" min="-150" max="150" value="0" id="left-fixed-move">
+                </div>
+                <div class="control-group">
+                  <div class="label-row">
+                    <label>Pitch / Tilt</label>
+                    <span class="val-display" id="left-fixed-tilt-val">0</span>
+                  </div>
+                  <input type="range" min="-10" max="10" step="0.1" value="0" id="left-fixed-tilt">
+                </div>
+                <div class="control-group">
+                  <div class="label-row">
+                    <label>Yaw / Rotation</label>
+                    <span class="val-display" id="left-fixed-rotation-val">0</span>
+                  </div>
+                  <input type="range" min="-45" max="45" value="0" id="left-fixed-rotation">
+                </div>
+                <div class="control-group">
+                  <div class="label-row">
+                    <label>Beam Intensity</label>
+                    <span class="val-display" id="left-fixed-focus-val">80%</span>
+                  </div>
+                  <input type="range" min="0" max="100" value="80" id="left-fixed-focus">
+                </div>
+              </div>
+            </section>
+            
+            <section>
+              <div class="section-header">
+                <div class="title-with-toggle">
+                  <h3>Moving Laser (Y)</h3>
+                  <label class="switch">
+                    <input type="checkbox" checked id="left-moving-toggle">
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+                <span class="badge accent">Vertical Shift</span>
+              </div>
+              <div class="control-grid">
+                <div class="control-group">
+                  <div class="label-row">
+                    <label>Vertical Shift (Y)</label>
+                    <span class="val-display" id="left-moving-pos-val">0</span>
+                  </div>
+                  <input type="range" min="-100" max="60" value="0" id="left-moving-pos">
+                </div>
+                <div class="control-group">
+                  <div class="label-row">
+                    <label>Pitch / Tilt</label>
+                    <span class="val-display" id="left-moving-tilt-val">0</span>
+                  </div>
+                  <input type="range" min="-10" max="10" step="0.1" value="0" id="left-moving-tilt">
+                </div>
+                <div class="control-group">
+                  <div class="label-row">
+                    <label>Yaw / Rotation</label>
+                    <span class="val-display" id="left-moving-rotation-val">0</span>
+                  </div>
+                  <input type="range" min="-45" max="45" value="0" id="left-moving-rotation">
+                </div>
+                <div class="control-group">
+                  <div class="label-row">
+                    <label>Beam Intensity</label>
+                    <span class="val-display" id="left-moving-focus-val">80%</span>
+                  </div>
+                  <input type="range" min="0" max="100" value="80" id="left-moving-focus">
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="tab-content" id="right-controls">
+            <section>
+              <div class="section-header">
+                <div class="title-with-toggle">
+                  <h3>Fixed Laser (Z2)</h3>
+                  <label class="switch">
+                    <input type="checkbox" checked id="right-fixed-toggle">
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+                <span class="badge">Longitudinal</span>
+              </div>
+              <div class="control-grid">
+                <div class="control-group">
+                  <div class="label-row">
+                    <label>Longitudinal (Z)</label>
+                    <span class="val-display" id="right-fixed-move-val">0</span>
+                  </div>
+                  <input type="range" min="-150" max="150" value="0" id="right-fixed-move">
+                </div>
+                <div class="control-group">
+                  <div class="label-row">
+                    <label>Pitch / Tilt</label>
+                    <span class="val-display" id="right-fixed-tilt-val">0</span>
+                  </div>
+                  <input type="range" min="-10" max="10" step="0.1" value="0" id="right-fixed-tilt">
+                </div>
+                <div class="control-group">
+                  <div class="label-row">
+                    <label>Yaw / Rotation</label>
+                    <span class="val-display" id="right-fixed-rotation-val">0</span>
+                  </div>
+                  <input type="range" min="-45" max="45" value="0" id="right-fixed-rotation">
+                </div>
+                <div class="control-group">
+                  <div class="label-row">
+                    <label>Beam Intensity</label>
+                    <span class="val-display" id="right-fixed-focus-val">80%</span>
+                  </div>
+                  <input type="range" min="0" max="100" value="80" id="right-fixed-focus">
+                </div>
+              </div>
+            </section>
+            
+            <section>
+              <div class="section-header">
+                <div class="title-with-toggle">
+                  <h3>Moving Laser (Y)</h3>
+                  <label class="switch">
+                    <input type="checkbox" checked id="right-moving-toggle">
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+                <span class="badge accent">Vertical Shift</span>
+              </div>
+              <div class="control-grid">
+                <div class="control-group">
+                  <div class="label-row">
+                    <label>Vertical Shift (Y)</label>
+                    <span class="val-display" id="right-moving-pos-val">0</span>
+                  </div>
+                  <input type="range" min="-100" max="60" value="0" id="right-moving-pos">
+                </div>
+                <div class="control-group">
+                  <div class="label-row">
+                    <label>Pitch / Tilt</label>
+                    <span class="val-display" id="right-moving-tilt-val">0</span>
+                  </div>
+                  <input type="range" min="-10" max="10" step="0.1" value="0" id="right-moving-tilt">
+                </div>
+                <div class="control-group">
+                  <div class="label-row">
+                    <label>Yaw / Rotation</label>
+                    <span class="val-display" id="right-moving-rotation-val">0</span>
+                  </div>
+                  <input type="range" min="-45" max="45" value="0" id="right-moving-rotation">
+                </div>
+                <div class="control-group">
+                  <div class="label-row">
+                    <label>Beam Intensity</label>
+                    <span class="val-display" id="right-moving-focus-val">80%</span>
+                  </div>
+                  <input type="range" min="0" max="100" value="80" id="right-moving-focus">
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="tab-content" id="top-controls">
+            <!-- Content for Ceiling -->
+            <section>
+              <div class="section-header">
+                <div class="title-with-toggle">
+                  <h3>Fixed Laser (Z)</h3>
+                  <label class="switch">
+                    <input type="checkbox" checked id="top-fixed-toggle">
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+                <span class="badge">Longitudinal</span>
+              </div>
+              <div class="control-grid">
+                <div class="control-group">
+                  <div class="label-row">
+                    <label>Longitudinal (Z)</label>
+                    <span class="val-display" id="top-fixed-move-val">0</span>
+                  </div>
+                  <input type="range" min="-100" max="100" value="0" id="top-fixed-move">
+                </div>
+                <div class="control-group">
+                  <div class="label-row">
+                    <label>Pitch / Tilt</label>
+                    <span class="val-display" id="top-fixed-tilt-val">0</span>
+                  </div>
+                  <input type="range" min="-10" max="10" step="0.1" value="0" id="top-fixed-tilt">
+                </div>
+                <div class="control-group">
+                  <div class="label-row">
+                    <label>Yaw / Rotation</label>
+                    <span class="val-display" id="top-fixed-rotation-val">0</span>
+                  </div>
+                  <input type="range" min="-45" max="45" value="0" id="top-fixed-rotation">
+                </div>
+                <div class="control-group">
+                  <div class="label-row">
+                    <label>Beam Intensity</label>
+                    <span class="val-display" id="top-fixed-focus-val">80%</span>
+                  </div>
+                  <input type="range" min="0" max="100" value="80" id="top-fixed-focus">
+                </div>
+              </div>
+            </section>
+            
+            <section>
+              <div class="section-header">
+                <div class="title-with-toggle">
+                  <h3>Moving Laser (X)</h3>
+                  <label class="switch">
+                    <input type="checkbox" checked id="top-moving-toggle">
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+                <span class="badge accent">Dynamic</span>
+              </div>
+              <div class="control-grid">
+                <div class="control-group">
+                  <div class="label-row">
+                    <label>Lateral (X)</label>
+                    <span class="val-display" id="top-moving-pos-val">50</span>
+                  </div>
+                  <input type="range" min="-30" max="150" value="50" id="top-moving-pos">
+                </div>
+                <div class="control-group">
+                  <div class="label-row">
+                    <label>Pitch / Tilt</label>
+                    <span class="val-display" id="top-moving-tilt-val">0</span>
+                  </div>
+                  <input type="range" min="-10" max="10" step="0.1" value="0" id="top-moving-tilt">
+                </div>
+                <div class="control-group">
+                  <div class="label-row">
+                    <label>Yaw / Rotation</label>
+                    <span class="val-display" id="top-moving-rotation-val">0</span>
+                  </div>
+                  <input type="range" min="-45" max="45" value="0" id="top-moving-rotation">
+                </div>
+                <div class="control-group">
+                  <div class="label-row">
+                    <label>Beam Intensity</label>
+                    <span class="val-display" id="top-moving-focus-val">80%</span>
+                  </div>
+                  <input type="range" min="0" max="100" value="80" id="top-moving-focus">
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <div class="bottom-actions">
+          <button id="reset-view" class="action-btn">
+            <i data-lucide="refresh-ccw"></i> Reset System
+          </button>
+          <button id="toggle-phantom" class="action-btn">
+            <i data-lucide="box"></i> Toggle Phantom
+          </button>
+        </div>
+      </div>
+
+      <div id="status-bar">
+        <div class="status-indicator">
+          <span class="dot"></span>
+          <span>SYSTEM READY</span>
+        </div>
+        <div class="coord-display">
+          <span>X: <strong id="cur-x">0.0</strong></span>
+          <span>Y (L/R): <strong id="cur-y-l">0.0</strong> / <strong id="cur-y-r">0.0</strong></span>
+          <span>Z (L/R): <strong id="cur-z-l">0.0</strong> / <strong id="cur-z-r">0.0</strong></span>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+    <script>
+      // Initialize Lucide icons
+      setTimeout(() => {
+        if (window.lucide) window.lucide.createIcons();
+      }, 100);
+    </script>
+  </body>
+</html>
