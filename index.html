@@ -13,6 +13,7 @@
   <body>
     <div id="app">
       <div id="canvas-container"></div>
+      <div id="dev-credit">Made by JG Kim</div>
       
       <div id="ui-overlay">
         <header>
@@ -68,28 +69,40 @@
                 <div class="control-group">
                   <div class="label-row">
                     <label>Longitudinal (Z)</label>
-                    <span class="val-display" id="y1-move-val">0</span>
+                    <div class="val-display">
+                      <input type="number" value="0" class="goto-input" id="y1-move-input">
+                      <button class="goto-btn" data-target="y1-move">GO</button>
+                    </div>
                   </div>
                   <input type="range" min="-150" max="150" value="0" id="y1-move">
                 </div>
                 <div class="control-group">
                   <div class="label-row">
                     <label>Yaw / Tilt</label>
-                    <span class="val-display" id="y1-tilt-val">0</span>
+                    <div class="val-display">
+                      <input type="number" step="0.1" value="0" class="goto-input" id="y1-tilt-input">
+                      <button class="goto-btn" data-target="y1-tilt">GO</button>
+                    </div>
                   </div>
                   <input type="range" min="-10" max="10" step="0.1" value="0" id="y1-tilt">
                 </div>
                 <div class="control-group">
                   <div class="label-row">
                     <label>Spin / Rotation</label>
-                    <span class="val-display" id="y1-rotation-val">0</span>
+                    <div class="val-display">
+                      <input type="number" value="0" class="goto-input" id="y1-rotation-input">
+                      <button class="goto-btn" data-target="y1-rotation">GO</button>
+                    </div>
                   </div>
                   <input type="range" min="-45" max="45" value="0" id="y1-rotation">
                 </div>
                 <div class="control-group">
                   <div class="label-row">
                     <label>Beam Intensity</label>
-                    <span class="val-display" id="y1-focus-val">80%</span>
+                    <div class="val-display">
+                      <input type="number" value="80" class="goto-input" id="y1-focus-input">
+                      <button class="goto-btn" data-target="y1-focus">GO</button>
+                    </div>
                   </div>
                   <input type="range" min="0" max="100" value="80" id="y1-focus">
                 </div>
@@ -112,28 +125,40 @@
                 <div class="control-group">
                   <div class="label-row">
                     <label>Vertical Shift (Y)</label>
-                    <span class="val-display" id="z1-pos-val">0</span>
+                    <div class="val-display">
+                      <input type="number" value="0" class="goto-input" id="z1-pos-input">
+                      <button class="goto-btn" data-target="z1-pos">GO</button>
+                    </div>
                   </div>
                   <input type="range" min="-100" max="60" value="0" id="z1-pos">
                 </div>
                 <div class="control-group">
                   <div class="label-row">
                     <label>Pitch / Tilt</label>
-                    <span class="val-display" id="z1-tilt-val">0</span>
+                    <div class="val-display">
+                      <input type="number" step="0.1" value="0" class="goto-input" id="z1-tilt-input">
+                      <button class="goto-btn" data-target="z1-tilt">GO</button>
+                    </div>
                   </div>
                   <input type="range" min="-10" max="10" step="0.1" value="0" id="z1-tilt">
                 </div>
                 <div class="control-group">
                   <div class="label-row">
                     <label>Spin / Rotation</label>
-                    <span class="val-display" id="z1-rotation-val">0</span>
+                    <div class="val-display">
+                      <input type="number" value="0" class="goto-input" id="z1-rotation-input">
+                      <button class="goto-btn" data-target="z1-rotation">GO</button>
+                    </div>
                   </div>
                   <input type="range" min="-45" max="45" value="0" id="z1-rotation">
                 </div>
                 <div class="control-group">
                   <div class="label-row">
                     <label>Beam Intensity</label>
-                    <span class="val-display" id="z1-focus-val">80%</span>
+                    <div class="val-display">
+                      <input type="number" value="80" class="goto-input" id="z1-focus-input">
+                      <button class="goto-btn" data-target="z1-focus">GO</button>
+                    </div>
                   </div>
                   <input type="range" min="0" max="100" value="80" id="z1-focus">
                 </div>
@@ -158,28 +183,40 @@
                 <div class="control-group">
                   <div class="label-row">
                     <label>Longitudinal (Z)</label>
-                    <span class="val-display" id="y2-move-val">0</span>
+                    <div class="val-display">
+                      <input type="number" value="0" class="goto-input" id="y2-move-input">
+                      <button class="goto-btn" data-target="y2-move">GO</button>
+                    </div>
                   </div>
                   <input type="range" min="-150" max="150" value="0" id="y2-move">
                 </div>
                 <div class="control-group">
                   <div class="label-row">
                     <label>Yaw / Tilt</label>
-                    <span class="val-display" id="y2-tilt-val">0</span>
+                    <div class="val-display">
+                      <input type="number" step="0.1" value="0" class="goto-input" id="y2-tilt-input">
+                      <button class="goto-btn" data-target="y2-tilt">GO</button>
+                    </div>
                   </div>
                   <input type="range" min="-10" max="10" step="0.1" value="0" id="y2-tilt">
                 </div>
                 <div class="control-group">
                   <div class="label-row">
                     <label>Spin / Rotation</label>
-                    <span class="val-display" id="y2-rotation-val">0</span>
+                    <div class="val-display">
+                      <input type="number" value="0" class="goto-input" id="y2-rotation-input">
+                      <button class="goto-btn" data-target="y2-rotation">GO</button>
+                    </div>
                   </div>
                   <input type="range" min="-45" max="45" value="0" id="y2-rotation">
                 </div>
                 <div class="control-group">
                   <div class="label-row">
                     <label>Beam Intensity</label>
-                    <span class="val-display" id="y2-focus-val">80%</span>
+                    <div class="val-display">
+                      <input type="number" value="80" class="goto-input" id="y2-focus-input">
+                      <button class="goto-btn" data-target="y2-focus">GO</button>
+                    </div>
                   </div>
                   <input type="range" min="0" max="100" value="80" id="y2-focus">
                 </div>
@@ -202,28 +239,40 @@
                 <div class="control-group">
                   <div class="label-row">
                     <label>Vertical Shift (Y)</label>
-                    <span class="val-display" id="z2-pos-val">0</span>
+                    <div class="val-display">
+                      <input type="number" value="0" class="goto-input" id="z2-pos-input">
+                      <button class="goto-btn" data-target="z2-pos">GO</button>
+                    </div>
                   </div>
                   <input type="range" min="-100" max="60" value="0" id="z2-pos">
                 </div>
                 <div class="control-group">
                   <div class="label-row">
                     <label>Pitch / Tilt</label>
-                    <span class="val-display" id="z2-tilt-val">0</span>
+                    <div class="val-display">
+                      <input type="number" step="0.1" value="0" class="goto-input" id="z2-tilt-input">
+                      <button class="goto-btn" data-target="z2-tilt">GO</button>
+                    </div>
                   </div>
                   <input type="range" min="-10" max="10" step="0.1" value="0" id="z2-tilt">
                 </div>
                 <div class="control-group">
                   <div class="label-row">
                     <label>Spin / Rotation</label>
-                    <span class="val-display" id="z2-rotation-val">0</span>
+                    <div class="val-display">
+                      <input type="number" value="0" class="goto-input" id="z2-rotation-input">
+                      <button class="goto-btn" data-target="z2-rotation">GO</button>
+                    </div>
                   </div>
                   <input type="range" min="-45" max="45" value="0" id="z2-rotation">
                 </div>
                 <div class="control-group">
                   <div class="label-row">
                     <label>Beam Intensity</label>
-                    <span class="val-display" id="z2-focus-val">80%</span>
+                    <div class="val-display">
+                      <input type="number" value="80" class="goto-input" id="z2-focus-input">
+                      <button class="goto-btn" data-target="z2-focus">GO</button>
+                    </div>
                   </div>
                   <input type="range" min="0" max="100" value="80" id="z2-focus">
                 </div>
@@ -249,28 +298,40 @@
                 <div class="control-group">
                   <div class="label-row">
                     <label>Longitudinal (Z)</label>
-                    <span class="val-display" id="y-move-val">0</span>
+                    <div class="val-display">
+                      <input type="number" value="0" class="goto-input" id="y-move-input">
+                      <button class="goto-btn" data-target="y-move">GO</button>
+                    </div>
                   </div>
-                  <input type="range" min="-100" max="100" value="0" id="y-move">
+                  <input type="range" min="-150" max="150" value="0" id="y-move">
                 </div>
                 <div class="control-group">
                   <div class="label-row">
                     <label>Pitch / Tilt</label>
-                    <span class="val-display" id="y-tilt-val">0</span>
+                    <div class="val-display">
+                      <input type="number" step="0.1" value="0" class="goto-input" id="y-tilt-input">
+                      <button class="goto-btn" data-target="y-tilt">GO</button>
+                    </div>
                   </div>
                   <input type="range" min="-10" max="10" step="0.1" value="0" id="y-tilt">
                 </div>
                 <div class="control-group">
                   <div class="label-row">
                     <label>Spin / Rotation</label>
-                    <span class="val-display" id="y-rotation-val">0</span>
+                    <div class="val-display">
+                      <input type="number" value="0" class="goto-input" id="y-rotation-input">
+                      <button class="goto-btn" data-target="y-rotation">GO</button>
+                    </div>
                   </div>
                   <input type="range" min="-45" max="45" value="0" id="y-rotation">
                 </div>
                 <div class="control-group">
                   <div class="label-row">
                     <label>Beam Intensity</label>
-                    <span class="val-display" id="y-focus-val">80%</span>
+                    <div class="val-display">
+                      <input type="number" value="80" class="goto-input" id="y-focus-input">
+                      <button class="goto-btn" data-target="y-focus">GO</button>
+                    </div>
                   </div>
                   <input type="range" min="0" max="100" value="80" id="y-focus">
                 </div>
@@ -293,28 +354,40 @@
                 <div class="control-group">
                   <div class="label-row">
                     <label>Lateral (X)</label>
-                    <span class="val-display" id="x-pos-val">50</span>
+                    <div class="val-display">
+                      <input type="number" value="0" class="goto-input" id="x-move-input">
+                      <button class="goto-btn" data-target="x-move">GO</button>
+                    </div>
                   </div>
-                  <input type="range" min="-30" max="150" value="50" id="x-pos">
+                  <input type="range" min="-200" max="200" value="0" id="x-move">
                 </div>
                 <div class="control-group">
                   <div class="label-row">
-                    <label>Pitch / Tilt</label>
-                    <span class="val-display" id="x-tilt-val">0</span>
+                    <label>Yaw / Tilt</label>
+                    <div class="val-display">
+                      <input type="number" step="0.1" value="0" class="goto-input" id="x-tilt-input">
+                      <button class="goto-btn" data-target="x-tilt">GO</button>
+                    </div>
                   </div>
                   <input type="range" min="-10" max="10" step="0.1" value="0" id="x-tilt">
                 </div>
                 <div class="control-group">
                   <div class="label-row">
                     <label>Spin / Rotation</label>
-                    <span class="val-display" id="x-rotation-val">0</span>
+                    <div class="val-display">
+                      <input type="number" value="0" class="goto-input" id="x-rotation-input">
+                      <button class="goto-btn" data-target="x-rotation">GO</button>
+                    </div>
                   </div>
                   <input type="range" min="-45" max="45" value="0" id="x-rotation">
                 </div>
                 <div class="control-group">
                   <div class="label-row">
                     <label>Beam Intensity</label>
-                    <span class="val-display" id="x-focus-val">80%</span>
+                    <div class="val-display">
+                      <input type="number" value="80" class="goto-input" id="x-focus-input">
+                      <button class="goto-btn" data-target="x-focus">GO</button>
+                    </div>
                   </div>
                   <input type="range" min="0" max="100" value="80" id="x-focus">
                 </div>

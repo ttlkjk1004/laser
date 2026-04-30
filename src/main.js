@@ -312,30 +312,46 @@ class LaserSimulator {
         laserIds.forEach(id => {
             const prefix = id;
             const updateVal = (suffix, val) => {
-                const el = document.getElementById(`${prefix}-${suffix}-val`);
-                if (el) el.textContent = typeof val === 'number' ? val.toFixed(1) : val;
+                const input = document.getElementById(`${prefix}-${suffix}-input`);
+                if (input) input.value = typeof val === 'number' ? val.toFixed(1) : val.toString().replace('%', '');
             };
+
+            const handleGoto = (suffix) => {
+                const input = document.getElementById(`${prefix}-${suffix}-input`);
+                const slider = document.getElementById(`${prefix}-${suffix}`);
+                if (input && slider) {
+                    let val = parseFloat(input.value);
+                    if (isNaN(val)) return;
+                    const min = parseFloat(slider.min);
+                    const max = parseFloat(slider.max);
+                    val = Math.max(min, Math.min(max, val));
+                    input.value = val;
+                    slider.value = val;
+                    slider.dispatchEvent(new Event('input'));
+                }
+            };
+
+            ['move', 'pos', 'tilt', 'rotation', 'focus'].forEach(suffix => {
+                const btn = document.querySelector(`button[data-target="${prefix}-${suffix}"]`);
+                const input = document.getElementById(`${prefix}-${suffix}-input`);
+                btn?.addEventListener('click', () => handleGoto(suffix));
+                input?.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') handleGoto(suffix);
+                });
+            });
 
             const moveIn = document.getElementById(`${prefix}-move`) || document.getElementById(`${prefix}-pos`);
             if (moveIn) {
                 moveIn.addEventListener('input', (e) => {
                     const val = parseFloat(e.target.value);
                     const laser = this.lasers[id];
-                    if (['y1', 'y2', 'z1', 'z2'].includes(id)) {
-                        if (id.startsWith('z')) {
+                    if (['y1', 'y2', 'z1', 'z2', 'y', 'x'].includes(id)) {
+                        if (id.startsWith('z') || (id === 'x' && moveIn.id.includes('pos'))) {
                             laser.group.position.y = val;
-                            updateVal('pos', val);
+                            updateVal(moveIn.id.includes('pos') ? 'pos' : 'move', val);
                         } else {
                             laser.group.position.z = val;
-                            updateVal('move', val);
-                        }
-                    } else if (['y', 'x'].includes(id)) {
-                        if (id === 'x') {
-                            laser.group.position.x = val;
-                            updateVal('pos', val);
-                        } else {
-                            laser.group.position.z = val;
-                            updateVal('move', val);
+                            updateVal(moveIn.id.includes('move') ? 'move' : 'pos', val);
                         }
                     }
                 });
@@ -345,12 +361,17 @@ class LaserSimulator {
                 const val = parseFloat(e.target.value);
                 const rad = val * (Math.PI / 180);
                 const laser = this.lasers[id];
-                if (id === 'y' || id === 'x' || id === 'z1' || id === 'z2') {
-                    // For 1, 2, 4, 6: Tilt is Pitch (rotation.x - Up/Down)
+                if (id === 'x') {
+                    // Special case for Laser 2: XYZ order + rotation.y for pure lateral tilt
+                    laser.group.rotation.order = 'XYZ';
+                    const baseRot = laser.config.rot[1];
+                    laser.group.rotation.y = baseRot + rad;
+                } else if (id === 'y' || id === 'z1' || id === 'z2') {
+                    // For 1, 4, 6: Tilt is Pitch (rotation.x)
                     const baseRot = laser.config.rot[0];
                     laser.group.rotation.x = baseRot + rad;
                 } else {
-                    // For 3 (y1) and 5 (y2): Tilt is Yaw (rotation.y - Left/Right)
+                    // For 3 (y1) and 5 (y2): Tilt is Yaw (rotation.y)
                     const baseRot = laser.config.rot[1];
                     laser.group.rotation.y = baseRot + rad;
                 }
@@ -361,9 +382,16 @@ class LaserSimulator {
                 const val = parseFloat(e.target.value);
                 const rad = val * (Math.PI / 180);
                 const laser = this.lasers[id];
-                // All lasers now use Spin for the Rotation slider
-                const baseRot = laser.config.rot[2]; // z component
-                laser.group.rotation.z = baseRot + rad;
+                if (id === 'x') {
+                    // For Laser 2: XYZ order + rotation.z for Spin
+                    laser.group.rotation.order = 'XYZ';
+                    const baseRot = laser.config.rot[2];
+                    laser.group.rotation.z = baseRot + rad;
+                } else {
+                    // All other lasers use YXZ + rotation.z for Spin
+                    const baseRot = laser.config.rot[2];
+                    laser.group.rotation.z = baseRot + rad;
+                }
                 updateVal('rotation', val);
             });
 
@@ -421,12 +449,12 @@ class LaserSimulator {
                     const slider = document.getElementById(`${id}-${suffix}`);
                     if (slider) {
                         if (suffix === 'focus') slider.value = 80;
-                        else slider.value = config.id === 'x' && suffix === 'pos' ? 50 : 0;
+                        else slider.value = config.id === 'x' && suffix === 'pos' ? 0 : 0; // Default to 0 for all
                     }
-                    const display = document.getElementById(`${id}-${suffix}-val`);
-                    if (display) {
-                        if (suffix === 'focus') display.textContent = '80%';
-                        else display.textContent = (config.id === 'x' && suffix === 'pos' ? 50 : 0).toFixed(1);
+                    const input = document.getElementById(`${id}-${suffix}-input`);
+                    if (input) {
+                        if (suffix === 'focus') input.value = 80;
+                        else input.value = (0).toFixed(1);
                     }
                 });
             });
