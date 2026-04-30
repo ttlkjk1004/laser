@@ -6,9 +6,6 @@ class LaserSimulator {
     constructor() {
         this.container = document.getElementById('canvas-container');
         this.scene = new THREE.Scene();
-        this.camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 2000);
-        this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        
         this.lasers = {};
         this.fans = {};
         this.projectionLines = [];
@@ -19,6 +16,7 @@ class LaserSimulator {
             z: 0x38bdf8  // Blue
         };
 
+        this.setupCamera();
         this.init();
         this.createEnvironment();
         this.createPillars();
@@ -28,29 +26,35 @@ class LaserSimulator {
         this.animate();
     }
 
-    init() {
+    setupCamera() {
+        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+        // Shift camera left to move scene right in the visible workspace
+        this.xOffset = -100;
+        this.camera.position.set(this.xOffset, 200, 600);
+        
+        this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         this.renderer.toneMapping = THREE.ReinhardToneMapping;
         this.container.appendChild(this.renderer.domElement);
 
-        this.camera.position.set(450, 350, 450);
-        this.camera.lookAt(0, 0, 0);
-
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.05;
-
-        this.scene.add(new THREE.AmbientLight(0xffffff, 0.3));
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-        dirLight.position.set(200, 400, 200);
-        this.scene.add(dirLight);
+        this.controls.target.set(this.xOffset, 0, 0);
 
         window.addEventListener('resize', () => {
             this.camera.aspect = window.innerWidth / window.innerHeight;
             this.camera.updateProjectionMatrix();
             this.renderer.setSize(window.innerWidth, window.innerHeight);
         });
+    }
+
+    init() {
+        this.scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+        dirLight.position.set(200, 400, 200);
+        this.scene.add(dirLight);
     }
 
     createEnvironment() {
@@ -348,6 +352,10 @@ class LaserSimulator {
                     // For Ceiling Moving (x): Tilt is Yaw (rotation.y)
                     const baseRot = laser.config.rot[1];
                     laser.group.rotation.y = baseRot + rad;
+                } else if (id === 'z1' || id === 'z2' || id === 'y2') {
+                    // For Side Moving (4, 6) and Right Fixed (5): Tilt is Pitch (rotation.x - Up/Down)
+                    const baseRot = laser.config.rot[0];
+                    laser.group.rotation.x = baseRot + rad;
                 } else {
                     const baseRot = laser.config.rot[1]; // y component
                     laser.group.rotation.y = baseRot + rad;
@@ -363,6 +371,10 @@ class LaserSimulator {
                     // For Ceiling lasers: Rotation becomes Spin (rotation.z)
                     const baseRot = laser.config.rot[2]; // z component
                     laser.group.rotation.z = baseRot + rad;
+                } else if (id === 'z1' || id === 'z2' || id === 'y2') {
+                    // For Side Moving (4, 6) and Right Fixed (5): Rotation is Yaw (rotation.y - Left/Right)
+                    const baseRot = laser.config.rot[1];
+                    laser.group.rotation.y = baseRot + rad;
                 } else {
                     const baseRot = laser.config.rot[0]; // x component
                     laser.group.rotation.x = baseRot + rad;
@@ -373,8 +385,8 @@ class LaserSimulator {
             document.getElementById(`${prefix}-focus`)?.addEventListener('input', (e) => {
                 const val = parseFloat(e.target.value);
                 const opacity = val / 100;
-                // Update opacity for fan (child at index 1)
-                const fan = this.lasers[id].group.children[1];
+                // Update opacity for fan (now at index 2 because index 1 is the number badge)
+                const fan = this.lasers[id].group.children[2];
                 if (fan && fan.material) fan.material.opacity = opacity * 0.15;
                 updateVal('focus', val + '%');
             });
@@ -397,8 +409,9 @@ class LaserSimulator {
         });
 
         document.getElementById('reset-view').onclick = () => {
-            this.controls.reset();
-            this.camera.position.set(450, 350, 450);
+            this.camera.position.set(this.xOffset, 200, 600);
+            this.controls.target.set(this.xOffset, 0, 0);
+            this.controls.update();
             
             // Reset all lasers to aligned state (0) and default angles
             const laserIds = ['y1', 'z1', 'y2', 'z2', 'y', 'x'];
@@ -413,7 +426,7 @@ class LaserSimulator {
                 laser.group.rotation.set(...config.rot);
                 
                 // Reset Intensity (80%)
-                const fan = laser.group.children[1];
+                const fan = laser.group.children[2];
                 if (fan && fan.material) {
                     fan.material.opacity = 0.8 * 0.15;
                 }
@@ -438,6 +451,9 @@ class LaserSimulator {
             this.phantom.visible = !this.phantom.visible;
             this.phantomLines.visible = this.phantom.visible;
         };
+
+        // Refresh icons
+        if (window.lucide) window.lucide.createIcons();
     }
 
     updatePhantomLines() {
