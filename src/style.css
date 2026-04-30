@@ -296,7 +296,7 @@ h3 {
   font-family: monospace;
   font-size: 0.75rem;
   padding: 2px 4px;
-  text-align: right;
+  text-align: center;
   outline: none;
   transition: all 0.2s;
 }

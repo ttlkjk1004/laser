@@ -346,12 +346,17 @@ class LaserSimulator {
                     const val = parseFloat(e.target.value);
                     const laser = this.lasers[id];
                     if (['y1', 'y2', 'z1', 'z2', 'y', 'x'].includes(id)) {
-                        if (id.startsWith('z') || (id === 'x' && moveIn.id.includes('pos'))) {
+                        if (id.startsWith('z')) {
                             laser.group.position.y = val;
-                            updateVal(moveIn.id.includes('pos') ? 'pos' : 'move', val);
+                            updateVal('pos', val);
+                        } else if (id === 'x') {
+                            // Laser 2 Lateral moves along X
+                            laser.group.position.x = val;
+                            updateVal('move', val);
                         } else {
+                            // Laser 1 and others move along Z
                             laser.group.position.z = val;
-                            updateVal(moveIn.id.includes('move') ? 'move' : 'pos', val);
+                            updateVal('move', val);
                         }
                     }
                 });
