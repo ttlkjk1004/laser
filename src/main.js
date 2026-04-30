@@ -27,13 +27,13 @@ class LaserSimulator {
     }
 
     setupCamera() {
-        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
-        // Shift camera left to move scene right in the visible workspace
-        this.xOffset = -100;
+        this.camera = new THREE.PerspectiveCamera(75, this.container.offsetWidth / this.container.offsetHeight, 0.1, 2000);
+        // Shift focus to the right to center in the remaining workspace
+        this.xOffset = -200;
         this.camera.position.set(this.xOffset, 200, 600);
         
         this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         this.renderer.toneMapping = THREE.ReinhardToneMapping;
         this.container.appendChild(this.renderer.domElement);
@@ -43,11 +43,16 @@ class LaserSimulator {
         this.controls.dampingFactor = 0.05;
         this.controls.target.set(this.xOffset, 0, 0);
 
-        window.addEventListener('resize', () => {
-            this.camera.aspect = window.innerWidth / window.innerHeight;
-            this.camera.updateProjectionMatrix();
-            this.renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+        window.addEventListener('resize', () => this.onWindowResize());
+    }
+
+    onWindowResize() {
+        const width = this.container.offsetWidth;
+        const height = this.container.offsetHeight;
+        
+        this.camera.aspect = width / height;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(width, height);
     }
 
     init() {
@@ -454,7 +459,7 @@ class LaserSimulator {
                     const slider = document.getElementById(`${id}-${suffix}`);
                     if (slider) {
                         if (suffix === 'focus') slider.value = 80;
-                        else slider.value = config.id === 'x' && suffix === 'pos' ? 0 : 0; // Default to 0 for all
+                        else slider.value = 0; // Default to 0 for all
                     }
                     const input = document.getElementById(`${id}-${suffix}-input`);
                     if (input) {
@@ -464,6 +469,47 @@ class LaserSimulator {
                 });
             });
         };
+
+        // Phone Mode Toggle
+        const modeBtn = document.getElementById('mode-toggle');
+        const uiOverlay = document.getElementById('ui-overlay');
+        const panelToggle = document.getElementById('panel-toggle');
+
+        if (modeBtn) {
+            modeBtn.onclick = () => {
+                const isMobile = document.body.classList.toggle('mobile-mode');
+                uiOverlay.classList.remove('hidden'); // Show panel when entering mobile mode
+                
+                modeBtn.innerHTML = isMobile ? 
+                    '<i data-lucide="monitor"></i><span>Window Mode</span>' : 
+                    '<i data-lucide="smartphone"></i><span>Phone Mode</span>';
+                
+                if (panelToggle) {
+                    panelToggle.innerHTML = '<i data-lucide="menu"></i>';
+                }
+                
+                if (window.lucide) window.lucide.createIcons();
+                
+                // Adjust camera offset for mobile
+                this.xOffset = isMobile ? 0 : -100;
+                this.controls.target.set(this.xOffset, 0, 0);
+                this.camera.position.x = this.xOffset;
+                
+                // Important: Update renderer size for the new layout
+                this.onWindowResize();
+                this.controls.update();
+            };
+        }
+
+        if (panelToggle) {
+            panelToggle.onclick = () => {
+                const isHidden = uiOverlay.classList.toggle('hidden');
+                panelToggle.innerHTML = isHidden ? 
+                    '<i data-lucide="menu"></i>' : 
+                    '<i data-lucide="x"></i>';
+                if (window.lucide) window.lucide.createIcons();
+            };
+        }
 
         document.getElementById('toggle-phantom').onclick = () => {
             this.phantom.visible = !this.phantom.visible;
