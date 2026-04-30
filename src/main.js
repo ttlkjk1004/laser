@@ -205,6 +205,7 @@ class LaserSimulator {
 
         config.forEach(c => {
             const group = new THREE.Group();
+            group.rotation.order = 'YXZ'; // Important: Yaw then Pitch then Spin
             group.position.set(...c.pos);
             group.rotation.set(...c.rot);
 
@@ -344,20 +345,13 @@ class LaserSimulator {
                 const val = parseFloat(e.target.value);
                 const rad = val * (Math.PI / 180);
                 const laser = this.lasers[id];
-                if (id === 'y') {
-                    // For Ceiling Fixed (y): Tilt is Pitch (rotation.x)
-                    const baseRot = laser.config.rot[0];
-                    laser.group.rotation.x = baseRot + rad;
-                } else if (id === 'x') {
-                    // For Ceiling Moving (x): Tilt is Yaw (rotation.y)
-                    const baseRot = laser.config.rot[1];
-                    laser.group.rotation.y = baseRot + rad;
-                } else if (id === 'z1' || id === 'z2' || id === 'y2') {
-                    // For Side Moving (4, 6) and Right Fixed (5): Tilt is Pitch (rotation.x - Up/Down)
+                if (id === 'y' || id === 'x' || id === 'z1' || id === 'z2') {
+                    // For 1, 2, 4, 6: Tilt is Pitch (rotation.x - Up/Down)
                     const baseRot = laser.config.rot[0];
                     laser.group.rotation.x = baseRot + rad;
                 } else {
-                    const baseRot = laser.config.rot[1]; // y component
+                    // For 3 (y1) and 5 (y2): Tilt is Yaw (rotation.y - Left/Right)
+                    const baseRot = laser.config.rot[1];
                     laser.group.rotation.y = baseRot + rad;
                 }
                 updateVal('tilt', val);
@@ -367,18 +361,9 @@ class LaserSimulator {
                 const val = parseFloat(e.target.value);
                 const rad = val * (Math.PI / 180);
                 const laser = this.lasers[id];
-                if (id === 'y' || id === 'x') {
-                    // For Ceiling lasers: Rotation becomes Spin (rotation.z)
-                    const baseRot = laser.config.rot[2]; // z component
-                    laser.group.rotation.z = baseRot + rad;
-                } else if (id === 'z1' || id === 'z2' || id === 'y2') {
-                    // For Side Moving (4, 6) and Right Fixed (5): Rotation is Yaw (rotation.y - Left/Right)
-                    const baseRot = laser.config.rot[1];
-                    laser.group.rotation.y = baseRot + rad;
-                } else {
-                    const baseRot = laser.config.rot[0]; // x component
-                    laser.group.rotation.x = baseRot + rad;
-                }
+                // All lasers now use Spin for the Rotation slider
+                const baseRot = laser.config.rot[2]; // z component
+                laser.group.rotation.z = baseRot + rad;
                 updateVal('rotation', val);
             });
 
@@ -467,47 +452,81 @@ class LaserSimulator {
 
         if (!this.phantom.visible) return;
 
-        const size = 50.1; // Slightly larger than box to avoid z-fighting
-        
         Object.values(this.lasers).forEach(laser => {
-            if (!laser.group.visible) return; // Skip if OFF
+            if (!laser.group.visible) return;
             const { group, config } = laser;
             const color = config.color;
-            const opacity = group.children[1].material.opacity * 5; // scaled back up
+            const opacity = 1.0; 
 
-            // Each laser projects a line on the faces of the box it intersects
-            // Since the lasers are axis-aligned, we can draw the lines directly.
+            // Get laser orientation in world space
+            const laserPos = new THREE.Vector3();
+            group.getWorldPosition(laserPos);
             
-            // X-axis (sagittal line on YZ plane)
-            if (config.axis === 'x') {
-                const x = group.position.x;
-                if (Math.abs(x) <= 50) {
-                    this.createBoxLine(new THREE.Vector3(x, -50, -50), new THREE.Vector3(x, 50, -50), color, opacity);
-                    this.createBoxLine(new THREE.Vector3(x, 50, -50), new THREE.Vector3(x, 50, 50), color, opacity);
-                    this.createBoxLine(new THREE.Vector3(x, 50, 50), new THREE.Vector3(x, -50, 50), color, opacity);
-                    this.createBoxLine(new THREE.Vector3(x, -50, 50), new THREE.Vector3(x, -50, -50), color, opacity);
+            const laserDir = new THREE.Vector3(0, 0, 1);
+            laserDir.applyQuaternion(group.quaternion);
+            
+            const laserNormal = new THREE.Vector3(config.isVertical ? 1 : 0, config.isVertical ? 0 : 1, 0);
+            laserNormal.applyQuaternion(group.quaternion);
+
+            // The laser beam is a plane defined by laserPos and laserNormal
+            const laserPlane = new THREE.Plane();
+            laserPlane.setFromNormalAndCoplanarPoint(laserNormal, laserPos);
+
+            // Phantom box bounds
+            const min = new THREE.Vector3(-50, -50, -50);
+            const max = new THREE.Vector3(50, 50, 50);
+
+            // We check each of the 6 faces of the box
+            const faces = [
+                { n: new THREE.Vector3(1, 0, 0), d: 50 },  // Right
+                { n: new THREE.Vector3(-1, 0, 0), d: 50 }, // Left
+                { n: new THREE.Vector3(0, 1, 0), d: 50 },  // Top
+                { n: new THREE.Vector3(0, -1, 0), d: 50 }, // Bottom
+                { n: new THREE.Vector3(0, 0, 1), d: 50 },  // Front
+                { n: new THREE.Vector3(0, 0, -1), d: 50 }  // Back
+            ];
+
+            faces.forEach(face => {
+                const facePlane = new THREE.Plane(face.n, face.d);
+                // Find intersection line between laserPlane and facePlane
+                // This is a bit complex for a simple script, so we use a robust approximation:
+                // Check the edges of the face and see where the laser plane intersects them.
+                
+                const edges = [];
+                if (Math.abs(face.n.x) > 0.5) { // X faces (YZ plane)
+                    const x = face.n.x * face.d;
+                    edges.push([new THREE.Vector3(x, -50, -50), new THREE.Vector3(x, 50, -50)]);
+                    edges.push([new THREE.Vector3(x, 50, -50), new THREE.Vector3(x, 50, 50)]);
+                    edges.push([new THREE.Vector3(x, 50, 50), new THREE.Vector3(x, -50, 50)]);
+                    edges.push([new THREE.Vector3(x, -50, 50), new THREE.Vector3(x, -50, -50)]);
+                } else if (Math.abs(face.n.y) > 0.5) { // Y faces (XZ plane)
+                    const y = face.n.y * face.d;
+                    edges.push([new THREE.Vector3(-50, y, -50), new THREE.Vector3(50, y, -50)]);
+                    edges.push([new THREE.Vector3(50, y, -50), new THREE.Vector3(50, y, 50)]);
+                    edges.push([new THREE.Vector3(50, y, 50), new THREE.Vector3(-50, y, 50)]);
+                    edges.push([new THREE.Vector3(-50, y, 50), new THREE.Vector3(-50, y, -50)]);
+                } else { // Z faces (XY plane)
+                    const z = face.n.z * face.d;
+                    edges.push([new THREE.Vector3(-50, -50, z), new THREE.Vector3(50, -50, z)]);
+                    edges.push([new THREE.Vector3(50, -50, z), new THREE.Vector3(50, 50, z)]);
+                    edges.push([new THREE.Vector3(50, 50, z), new THREE.Vector3(-50, 50, z)]);
+                    edges.push([new THREE.Vector3(-50, 50, z), new THREE.Vector3(-50, -50, z)]);
                 }
-            }
-            // Y-axis (transverse line on XZ plane)
-            if (config.axis === 'y') {
-                const y = group.position.y;
-                if (Math.abs(y) <= 50) {
-                    this.createBoxLine(new THREE.Vector3(-50, y, -50), new THREE.Vector3(50, y, -50), color, opacity);
-                    this.createBoxLine(new THREE.Vector3(50, y, -50), new THREE.Vector3(50, y, 50), color, opacity);
-                    this.createBoxLine(new THREE.Vector3(50, y, 50), new THREE.Vector3(-50, y, 50), color, opacity);
-                    this.createBoxLine(new THREE.Vector3(-50, y, 50), new THREE.Vector3(-50, y, -50), color, opacity);
+
+                const pts = [];
+                edges.forEach(edge => {
+                    const line = new THREE.Line3(edge[0], edge[1]);
+                    const intersect = new THREE.Vector3();
+                    if (laserPlane.intersectLine(line, intersect)) {
+                        pts.push(intersect.clone());
+                    }
+                });
+
+                if (pts.length >= 2) {
+                    // Sort points to handle non-convexity (though box faces are convex)
+                    this.createBoxLine(pts[0], pts[1], color, 0.8);
                 }
-            }
-            // Z-axis (coronal line on XY plane)
-            if (config.axis === 'z') {
-                const z = group.position.z;
-                if (Math.abs(z) <= 50) {
-                    this.createBoxLine(new THREE.Vector3(-50, -50, z), new THREE.Vector3(50, -50, z), color, opacity);
-                    this.createBoxLine(new THREE.Vector3(50, -50, z), new THREE.Vector3(50, 50, z), color, opacity);
-                    this.createBoxLine(new THREE.Vector3(50, 50, z), new THREE.Vector3(-50, 50, z), color, opacity);
-                    this.createBoxLine(new THREE.Vector3(-50, 50, z), new THREE.Vector3(-50, -50, z), color, opacity);
-                }
-            }
+            });
         });
     }
 
